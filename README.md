@@ -1,2 +1,2 @@
 # ClusteringAlgorithim
-Project for 372, uses Euclidean distances and clusters them around 
+Project for 372, uses Euclidean distances and determines clusters. 
