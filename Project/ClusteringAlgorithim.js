@@ -10,7 +10,7 @@ function main() {
   }
 
   // Read the file and print its contents.
-  var fs = require('fs'), filename = 'Project/input.txt';     //FERN: for testing... REMINDER TO SET BACK TO process.argv[2];
+  var fs = require('fs'), filename = 'input.txt';     //FERN: for testing... REMINDER TO SET BACK TO process.argv[2];
   fs.readFile(filename, 'utf8', function(err, data) {
     if (err) throw err;
 
@@ -28,8 +28,87 @@ function main() {
     
     parseFileContents(fileContents, dataPoints, clusters, k, n);
 
-    testSuite(fileContents, dataPoints, clusters);           //FERN: for testing... REMINDER TO REMOVE function
+    //first loop dont calculate centroids
+    //loop calculate centroids put points into clusters
+    var change = true;
+    var notfirst = false;
+    while(change)
+    {
+      var oldClusters = JSON.parse(JSON.stringify(clusters));
+      // Calculate centroids
+      if(notfirst)
+      {
+        computeCentroid(clusters); 
+      }
+      else 
+        notfirst = true;
+      // Assign data points to clusters
+      for(var i = 0; i<dataPoints.length; i++)
+      {
+        var closestCluster = 0;
+        var x = dataPoints[i].X;
+        var y = dataPoints[i].Y;
+        // Check data point with each centroid find closest
+        for(var j = 0; j<clusters.length; j++)
+        {
+          var distance;
+          if(j == 0)
+          { 
+            distance = euclidDist({X:(clusters[j].cluster[0]), Y:(clusters[j].cluster[1])}, {X:x, Y:y}); 
+          }
+          else
+          {
+            var newDistance = euclidDist({X:(clusters[j].cluster[0]), Y:(clusters[j].cluster[1])}, {X:x, Y:y});
+            if(newDistance < distance)
+            {
+              closestCluster = j;
+              distance = newDistance;
+            }
+          } 
+        }
+        // add data point to closest cluster
+        clusters[closestCluster].points.push(dataPoints[i]);
+      }
+      // if no points changed clusters we're done
+      if(clustersEqual(oldClusters,clusters))
+        change = false;
+    }
+
+    console.log("Final Result ----------------------------------- ");
+    printClusters(clusters);
+
+    //testSuite(fileContents, dataPoints, clusters);           //FERN: for testing... REMINDER TO REMOVE function
   });
+}
+
+function printClusters(clusters)
+{
+  for(var i=0; i<clusters.length; i++)
+  {
+    console.log("Cluster " + (i+1) + " centroid: " + clusters[i].cluster);
+    console.log("Points: ");
+    clusters[i].points.forEach(element => console.log(element));
+    console.log("");
+  }
+}
+
+function clustersEqual(c1,c2) {
+  for(var i = 0; i < c1.length; i++)
+  {
+    var a1 = c1[i].points;
+    var a2 = c2[i].points;
+
+    if(a1.length != a2.length)
+      return false;
+
+    for(var j = 0; j<a1.length; j++)
+    {
+      if((a1[j].X != a2[j].X) || (a1[j].Y != a2[j].Y))
+        return false;
+    }
+  }
+
+  return true;
 }
 
 function parseFileContents(fileContents, dataPoints, clusters, k, n){
@@ -55,10 +134,9 @@ function computeCentroid(clusters){
     var pts = clusters[i].points;
     var len =  pts.length;
     for (var j = 0; j < len; j++) {
-      sum = [(sum[0] += pts[j][0]), (sum[1] += pts[j][1])];
+      sum = [(sum[0] += pts[j].X), (sum[1] += pts[j].Y)];
     }
     clusters[i].cluster = [((1/len) * sum[0]), ((1/len) * sum[1])];
-    //might change
     clusters[i].points = [];
   }
 }
