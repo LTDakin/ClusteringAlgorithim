@@ -11,6 +11,9 @@ such that each point is the closet cluster, which is determined by the
 Euclidean distances from the points to the centroids of the cluster’s contents.
 The program takes in a file with n two–dimensional data points (X,Y) (1 ≤ i ≤ n), 
 as will k and the initial cluster centroids (1 ≤ j ≤ k).
+
+Link to Language Study:
+https://docs.google.com/document/d/1N3WS1ZtcpaxTfFxfUTIGwsvziVHvEi_vAQysm1wErSA/edit?usp=sharing
 */
 
 /*
@@ -42,71 +45,70 @@ function main() {
     
     parseFileContents(fileContents, dataPoints, clusters, k, n);
   
-      //first loop dont calculate centroids
-      //loop calculate centroids put points into clusters
-      var change = true;
-      var notfirst = false;
-      while(change)
-      {
-        var oldClusters = JSON.parse(JSON.stringify(clusters));
-        // Calculate centroids
-        if(notfirst)
-        {
-          computeCentroid(clusters); 
-        }
-        else 
-          notfirst = true;
-        // Assign data points to clusters
-        for(var i = 0; i<dataPoints.length; i++)
-        {
-          var closestCluster = 0;
-          var x = dataPoints[i].X;
-          var y = dataPoints[i].Y;
-          // Check data point with each centroid find closest
-          for(var j = 0; j<clusters.length; j++)
-          {
-            var distance;
-            if(j == 0)
-            { 
-              distance = euclidDist({X:(clusters[j].cluster[0]), Y:(clusters[j].cluster[1])}, {X:x, Y:y}); 
-            }
-            else
-            {
-              var newDistance = euclidDist({X:(clusters[j].cluster[0]), Y:(clusters[j].cluster[1])}, {X:x, Y:y});
-              if(newDistance < distance)
-              {
-                closestCluster = j;
-                distance = newDistance;
-              }
-            } 
-          }
-          // add data point to closest cluster
-          clusters[closestCluster].points.push(dataPoints[i]);
-        }
-        // if no points changed clusters we're done
-        if(clustersEqual(oldClusters,clusters))
-          change = false;
+    //first loop dont calculate centroids
+    //loop calculate centroids put points into clusters
+    var change = true;
+    var notfirst = false;
+    var countIter = 0;
+    while(change) {
+      var oldClusters = JSON.parse(JSON.stringify(clusters));
+      // Calculate centroids
+      if(notfirst) {
+        computeCentroid(clusters); 
+      } else {
+        notfirst = true;
       }
-  
-    console.log("Final Result ----------------------------------- ");
-    printClusters(clusters);
+      // Assign data points to clusters
+      for(var i = 0; i<dataPoints.length; i++) {
+        var closestCluster = 0;
+        var x = dataPoints[i].X;
+        var y = dataPoints[i].Y;
+        // Check data point with each centroid find closest
+        for(var j = 0; j<clusters.length; j++) {
+          var distance;
+          if(j == 0) { 
+            distance = euclidDist({X:(clusters[j].cluster[0]), Y:(clusters[j].cluster[1])}, {X:x, Y:y}); 
+          } else {
+            var newDistance = euclidDist({X:(clusters[j].cluster[0]), Y:(clusters[j].cluster[1])}, {X:x, Y:y});
+            if(newDistance < distance) {
+              closestCluster = j;
+              distance = newDistance;
+            }
+          } 
+        }
+        // add data point to closest cluster
+        clusters[closestCluster].points.push(dataPoints[i]);
+      }
+      // if no points changed clusters we're done
+      if(clustersEqual(oldClusters,clusters)) {
+        change = false;
+      }
+      //count required iterations.
+      countIter++;
+    }
+
+    //print results
+    printClusters(clusters, countIter);
     });
   }
   
 /*
-printClusters(clusters):Prints to console the centroid and its points.
+printClusters(clusters):Prints to console the final centroid locations.
 
 The following function prints the cluster objects in the clusters array with
-the centroid/final cluster and its points displayed. 
+the centroid/final cluster in the format from the spec.
 */
-  function printClusters(clusters) {
+  function printClusters(clusters, countIter) {
+    console.log("The final centroid locations are:");
+    console.log("");
     for(var i=0; i<clusters.length; i++)
     {
-      console.log("Cluster " + (i+1) + " centroid: " + clusters[i].cluster);
-      console.log("Points: ");
-      clusters[i].points.forEach(element => console.log(element));
-      console.log("");
+      var x = clusters[i].cluster[0].toFixed(3);
+      var y = clusters[i].cluster[1].toFixed(3);
+      console.log("u(" + (i+1) + ") = (" + parseFloat(x) + "," + parseFloat(y) + ")");
     }
+    console.log("");
+    console.log(parseInt(countIter) + " iterations were required.");
   }
   
 /*
