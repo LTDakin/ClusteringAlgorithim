@@ -21,13 +21,13 @@ main(): Used to start execution of the Cluster Algorithim.
 */
 function main() {
     // Make sure we got a filename on the command line.
-    if (process.argv.length < 2) {
+    if (process.argv.length < 3) {
       console.log('Missing starting file');
       process.exit(1);
     }
 
     // Read the file and print its contents.
-    var fs = require('fs'), filename = 'JS/input.txt';
+    var fs = require('fs'), filename = process.argv[2];
     fs.readFile(filename, 'utf8', function(err, data) {
       if (err) throw err;
   
